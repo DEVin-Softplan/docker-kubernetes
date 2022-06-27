@@ -1,0 +1,45 @@
+Olá pessoal!! 
+na aula 01 introduzimos o tema virtualização sobretudo a virtualização de microserviços. Falamos das vantagens dessa tecnologia e posteriormente ingressamos no Docker. Nele começamos a trabalhar com containers, camada mais básica de trabalho no docker. Baixamos nossa primeira imagem do docker hub e criamos o primeiro container a partir da imagem. 
+
+Depois vimos outros parâmetros possíveis a serem passados no momento da criação do container, como nome, especificação de porta, volume e versão da imagem. Assim, subimos uma aplicação web em php, usando apache e php versão 7.4, comunicando um outro container rodando banco de dados mysql. Hoje, avançaremos no docker!! Abaixo, deixo os comandos utilizados em aula:
+
+1° docker pull nomeImagemDockerHub  > faz o download da imagem do docker hub para repositório local
+
+2° docker run nomeImagem:tag > cria e executa um container da imagem informada. Se a imagem não estiver no repositório local, será feito download imediatamente e depois container será executado. 
+
+exemplo usados usados em aula:
+docker container run httpd
+
+docker container run --name teste-php-apache -d -p 80:80 -v C:\Users\gabriel.ti\projeto:/var/www/html/projeto php:7.4-apache
+
+docker container run --name teste-mysql -d -p 3306:3306 -v C:\Users\gabriel.ti\db:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=rootdb__ mysql
+
+
+obs: PARA TESTAR APLICAÇÃO EM PHP COM APACHE VOCÊS PODEM CRIAR UM ARQUIVO APP.PHP COM O SEGUINTE CONTEÚDO:
+
+
+<?php
+phpinfo();
+?>
+
+ACESSANDO NA PÁGINA DA APLICAÇÃO (localhost/projeto/app.php) ABRIRÁ A PÁGINA DO PHP INFO QUE MOSTREI EM AULA. 
+
+
+
+3° docker container stop nomecontainer > para a execução do container informado (pode ser nome ou id do container)
+
+4° docker container ls  ou docker ps > mostra os container em execução
+
+5° docker container ls -a > mostra todos os container, inclusive os parados
+
+6° docker container start nomecontainer > inicia um container que estava parado
+
+7º docker container exec nomecontainer COMMAND > permite enviar um comando a ser executado dentro do container informado. Na aula, vimos dois exemplos:
+
+docker exec teste-php-apache docker-php-ext-install mysqli   > instalar extensão mysqli para fazer conexão com banco 
+
+docker exec teste-php-apache apache2ctl restart  > reiniciar o serviço do apache
+
+docker exec teste-php-apache /bin/bash > acessar o bash do container
+
+8° docker images > listar as imagens no repositório local	

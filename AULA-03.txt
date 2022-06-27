@@ -1,0 +1,156 @@
+# Projeto DEVinSales
+
+comando para criação banco de dados SQL SERVER no docker:
+
+docker run --name sql1 --hostname sql1 -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=Rootdb__!" -e "MSSQL_PID=Express" -p 1433:1433 -d mcr.microsoft.com/mssql/server:2017-latest
+
+Dockerfile do projeto:
+
+FROM mcr.microsoft.com/dotnet/sdk
+
+WORKDIR /usr/app
+
+COPY . .
+
+RUN dotnet add DevInSales package Microsoft.AspNetCore.JsonPatch
+RUN dotnet add DevInSales package Microsoft.AspNetCore.Mvc.NewtonsoftJson
+
+
+RUN dotnet add DevInSales package Microsoft.EntityFrameworkCore
+RUN dotnet add DevInSales package Microsoft.EntityFrameworkCore.Tools
+RUN dotnet add DevInSales package Microsoft.EntityFrameworkCore.Design
+RUN dotnet add DevInSales package Microsoft.EntityFrameworkCore.SqlServer
+RUN dotnet add DevInSales package Swashbuckle.AspNetCore
+
+RUN dotnet dev-certs https
+RUN dotnet dev-certs https --trust
+
+ENV PATH $PATH:/root/.dotnet/tools
+RUN dotnet tool install -g dotnet-ef 
+
+
+#RUN dotnet ef migrations add InitialCreate --project DevInSales
+#RUN dotnet ef database update --project DevInSales
+
+cmd dotnet run --project DevInSales
+
+
+_____________
+
+
+
+# Projeto JAVA com servidor web WildflY
+repositório executado: https://github.com/TechDive-IST/m03s01
+
+com o arquivo .war gerado (comando mvn clean install) podemos subir container com imagem do Wildfly
+
+
+subindo container sem arquivo .war 
+docker run -p 8080:8080 -p 9990:9990 -it quay.io/wildfly/wildfly /opt/jboss/wildfly/bin/standalone.sh -b 0.0.0.0 -bmanagement 0.0.0.0
+
+copiar arquvo .war após container estar UP
+
+docker cp C:\Users\gabriel.ti\java-wild\m03s01-1.0-SNAPSHOT.war heuristic_snyder:/opt/jboss/wildfly/standalone/deployments/
+
+assim, a aplicação (API) em java está disponível em: http://localhost:8080/m03s01-1.0-SNAPSHOT/
+
+via DOCKERFILE:
+
+FROM quay.io/wildfly/wildfly
+ADD m03s01-1.0-SNAPSHOT.war /opt/jboss/wildfly/standalone/deployments/
+
+RUN /opt/jboss/wildfly/bin/add-user.sh gabriel gabriel1 --silent
+CMD ["/opt/jboss/wildfly/bin/standalone.sh", "-b", "0.0.0.0", "-bmanagement", "0.0.0.0"]
+
+_____________________________
+
+arquivo docker-compose usado:
+
+version: "3"
+services:
+  apijava:
+    image: wildflyapi:2.0
+    container_name: java-app-wildfly
+    ports:
+      - "8080:8080"
+      - "9990:9990"
+   
+
+__________________________________
+
+
+# HelloWorld em NODE.JS
+
+DOCKERFILE:
+FROM node:alpine
+
+WORKDIR /usr/app
+
+
+COPY package*.json ./
+
+RUN npm install
+
+COPY . .
+
+EXPOSE 3000
+
+
+___________________
+
+depois subimos container na porta 3000 referenciando a imagem do Dockerfile:
+
+docker run -d -p 3000:3000 node-aula3:1.0
+
+_______________________________
+
+# DOCKER INSPECT E DOCKER LOGS
+Falamos sobre o comando docker inspect que nos permite ver mais detalhes dos container e imagens:
+
+docker inspect nomeContainer
+docker inspect images
+
+
+"docker logs nomeContainer" para verificação de logs 
+
+Depois partimos para Docker Swarm... 
+
+Subimos 3 VMs, 1 manager e 2 Workers e formamos o cluster. (comandos de criação e configuração estão nos slides)
+
+__________________________
+
+# Docker Swarm (formação de cluster e orquestração de container do docker)
+
+1° comando de inicialização do Swarm mode no node Master
+
+docker swarm init 
+
+podemos especificar um ip 
+
+docker swarm init  --listen-addr ip_master
+
+2° ingressão dos nodes workers
+
+copiar comando join gerado no master para dentro dos workers
+
+3° listar os nodes do cluster
+
+docker nodes ls 
+
+4° criar os serviços em modo cluster a partir do docker-compose file
+docker stack deploy --compose-file=docker-compose.yml testeswarm
+
+5° listar servicos criados 
+docker service ls >> no node master apenas
+
+detalhes de onde cada servico está rodando:
+docker service ps nomeservico
+
+6° escalar nosso serviço 
+docker service scale testeswarm_adminer-compose=2
+
+7° excluir serviços criados a partir do stack deploy (semelhante ao docker-compose down)
+docker stack rm nomeservico-stack-deploy
+
+OBS: para acessar no adminer, o servidor é o nome do container com postgres. No caso, postgres-compose
+

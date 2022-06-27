@@ -1,0 +1,88 @@
+após revisão continuamos a configuração da aplicação em PHP copiando o arquivo de configuração para dentro do diretório específico
+
+# COPIAR ARQUIVOS PARA DENTRO DO CONTAINER:
+docker cp host file directory container name:/container file directory.
+docker cp C:\Users\gabriel.ti\Desktop\php.ini teste-php-apache:/usr/local/etc/php
+
+#DOCKER-COMPOSE
+
+# exemplo de docker-compose em formato .yml
+
+version: "3"
+services:
+  web:
+    image: php:7.4-apache
+    container_name: teste-php-apache
+    ports:
+      - "80:80"
+    volumes:
+      - C:\Users\gabriel.ti\projeto:/var/www/html/projeto
+     
+     
+  banco: 
+    image: mysql
+    container_name: teste-mysql
+    ports:
+      - "3306:3306"
+    volumes:
+      - C:\Users\gabriel.ti\db:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD:rootdb__
+
+
+# comando para executar o compose file
+
+docker-compose -f docker-compose.yml up -d  >> iniciar aplicativo
+docker-compose -f docker-compose.yml down >> parar aplicativo
+
+# exemplo em container da aplicação adminer + postgres
+
+criando banco postgress
+docker run --name postgres -e POSTGRES_PASSWORD=password -d postgres
+
+acessando gerencianmentro via adminer
+docker run -d --link postgres:postgres -p 8080:8080 adminer
+
+# arquivo .yml do adminer + postgres
+
+version: "3"
+services:
+  postgres-compose:
+    image: postgres
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_PASSWORD=password
+  adminer-compose:
+    image: adminer
+    container_name: adminer-container
+    ports:
+      - "8080:8080"
+    links:
+      - postgres-compose:postgres
+
+
+# Dockerfile
+
+para criar uma imagem própria a partir da imagem do node por exemplo, usamos em aula (arquivo está no .zip enviado):
+
+docker build .   >> compila o Dockerfile que está no diretório corrente. 
+
+ou usamos 
+
+docker build -t nomeImagem:tag .  >> compila o Dockerfile que está no diretório corrente passando um nome e versão para imagem gerada.
+
+Para subir o container com a imagem gerada, usamos:
+docker container run -d -p 3000:3000 nomeImagem:tag
+
+
+# imagem para rodar código em C# - exemplo rodando arquivo helloworld.exe
+
+docker run --rm --name dotnet -v C:\Users\gabriel.ti\c#:/usr/app -w /usr/app mono mono helloworld.exe
+
+--rm = CONTAINER SERÁ CRIADO, EXECUTADO E EXCLUÍDO NO FINAL;
+-w /usr/app = DIRETÓRIO DE TRABALHO DO CONTAINER (WORKDIR)
+
+
+
+
